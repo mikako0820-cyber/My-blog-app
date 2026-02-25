@@ -22,7 +22,7 @@ module.exports = async function handler (req, res) {
       return res.status(500).json({ message: "サーバーのAPIキー設定がありません。" });
     }
 
-    const prompt =  
+    const prompt = `
 あなたは日本語のプロブロガーです。
 カテゴリ「${categoryText}」、テーマ「${topic}」、トーン「${tone}」でブログ記事を書いてください。
 
@@ -72,3 +72,4 @@ module.exports = async function handler (req, res) {
     return res.status(500).json({ message: "サーバーエラーが発生しました。" });
   }
 }
+`; 
