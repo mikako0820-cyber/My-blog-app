@@ -61,11 +61,11 @@ const anthropicData = JSON.parse(raw);
 
     if (!anthropicRes.ok) {
       return res.status(anthropicRes.status).json({
-        message: data?.error?.message || "Anthropic APIエラー"
+        message: anthropicData?.error?.message || "Anthropic APIエラー"
       });
     }
 
-    const text = data?.content?.[0]?.text;
+    const text = anthropicData?.content?.[0]?.text;
     if (!text) {
       return res.status(500).json({ message: "記事の生成結果が空でした。" });
     }
@@ -78,6 +78,4 @@ const anthropicData = JSON.parse(raw);
     return res.status(200).json({ html: safeHtml });
   } catch (e) {
     return res.status(500).json({ message: "サーバーエラーが発生しました。" });
-  }
-}
-`; 
+  
