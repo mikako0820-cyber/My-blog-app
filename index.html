@@ -61,7 +61,7 @@ async function generateBlog() {
   const categorySelect = document.getElementById('category');
   const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
   const tone = document.getElementById('tone').value;
-  <button id="generateBtn">✨ブログ記事を生成する</button>
+  const btn = document.getElementById('generateBtn');
 
   if (!topic) {
     alert("テーマを入力してください。");
