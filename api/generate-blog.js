@@ -66,7 +66,7 @@ ${tone}
         "content-type": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-3-haiku-20240307",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 1500,
         messages: [{ role: "user", content: prompt }]
       })
