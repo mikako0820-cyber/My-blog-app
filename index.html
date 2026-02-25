@@ -4,112 +4,253 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI ブログジェネレーター</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --ink: #0f0e0c; --paper: #f5f0e8; --cream: #ede8da; --accent: #c8401a; --border: #ccc4b4; }
-    body { background: var(--paper); color: var(--ink); font-family: 'Noto Serif JP', serif; padding: 1.5rem; }
-    .container { max-width: 800px; margin: 0 auto; background: var(--cream); padding: 2rem; border: 1px solid var(--border); position: relative; }
-    .container::before { content: ''; position: absolute; top: 5px; left: 5px; right: -5px; bottom: -5px; border: 1px solid var(--border); z-index: -1; }
-    h2 { font-family: 'Syne', sans-serif; font-weight: 800; margin-bottom: 1rem; color: var(--ink); }
-    label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; color: #7a7268; }
-    input, select { width: 100%; padding: 0.8rem; margin-bottom: 1.2rem; border: 1px solid var(--border); background: var(--paper); font-family: inherit; }
-    .generate-btn { width: 100%; padding: 1.2rem; background: var(--accent); color: white; border: none; font-family: 'Syne', sans-serif; font-weight: 800; cursor: pointer; transition: 0.2s; }
-    .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    #output { margin-top: 3rem; display: none; border-top: 3px solid var(--ink); padding-top: 2rem; }
-    .blog-category { display: inline-block; background: #2a6049; color: white; font-size: 0.7rem; padding: 0.2rem 0.6rem; margin-bottom: 1rem; font-family: 'Syne', sans-serif; }
-    #outputContent { line-height: 1.8; }
-    .loading { opacity: 0.5; pointer-events: none; }
+    :root {
+      --ink: #0f0e0c;
+      --paper: #f5f0e8;
+      --cream: #ede8da;
+      --accent: #c8401a;
+      --border: #ccc4b4;
+      --muted: #7a7268;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Serif JP', serif;
+      padding: 24px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      padding: 28px;
+      position: relative;
+    }
+    h1 {
+      margin: 0;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      font-size: 56px;
+      line-height: 1;
+    }
+    h1 span {
+      font-weight: 700;
+    }
+    .sub {
+      margin-top: 10px;
+      margin-bottom: 28px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #bba98f;
+      box-shadow: 0 0 0 3px rgba(184, 149, 109, 0.15);
+    }
+    .generate-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+    .generate-btn:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+    .generate-btn.loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    #output {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 2px solid var(--ink);
+      display: none;
+    }
+    .blog-category {
+      display: inline-block;
+      background: #2a6049;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    #outputTitle {
+      margin: 6px 0 14px;
+      font-size: 28px;
+      line-height: 1.4;
+    }
+    #outputContent {
+      line-height: 1.9;
+      font-size: 16px;
+    }
+    #outputContent h2 {
+      margin-top: 28px;
+      font-size: 22px;
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+    #outputContent h3 {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #outputContent p {
+      margin: 10px 0;
+    }
+    #outputContent ul, #outputContent ol {
+      padding-left: 22px;
+      margin: 10px 0;
+    }
+    #outputContent li {
+      margin: 4px 0;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .container { padding: 18px; }
+      h1 { font-size: 38px; }
+      input, select { font-size: 15px; }
+      .generate-btn { font-size: 16px; }
+      #outputTitle { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>AI<span>Blog</span> Generator</h1>
+    <div class="sub">豊かな創造の時間を、AIと共に。</div>
 
-<div class="container">
-  <h2>AI<span>Blog</span> Generator</h2>
-  <p style="font-size: 0.8rem; color: #7a7268; margin-bottom: 2rem;">豊かな創造の時間を、AIと共に。</p>
+    <label for="topic">テーマ・トピック</label>
+    <input
+      type="text"
+      id="topic"
+      placeholder="例：美容師から見た40代女性の美容と健康のお悩み事情"
+      maxlength="120"
+    >
 
-  <label>テーマ・トピック</label>
-  <input type="text" id="topic" placeholder="例: 美容師からみた40代の健康と美容">
+    <label for="category">カテゴリ</label>
+    <select id="category">
+      <option value="美容・健康">美容・健康</option>
+      <option value="ライフスタイル">ライフスタイル</option>
+      <option value="テクノロジー">テクノロジー</option>
+      <option value="ビジネス">ビジネス</option>
+      <option value="グルメ">グルメ</option>
+    </select>
 
-  <label>カテゴリ</label>
-  <select id="category">
-    <option value="beauty">美容・健康</option>
-    <option value="lifestyle">ライフスタイル</option>
-    <option value="tech">テクノロジー</option>
-    <option value="business">ビジネス</option>
-    <option value="food">グルメ</option>
-  </select>
+    <label for="tone">文章のトーン</label>
+    <select id="tone">
+      <option value="親しみやすい">親しみやすい</option>
+      <option value="プロフェッショナル">プロフェッショナル</option>
+      <option value="情熱的">情熱的</option>
+    </select>
 
-  <label>文章のトーン</label>
-  <select id="tone">
-    <option value="親しみやすく、共感できるスタイル">親しみやすい</option>
-    <option value="プロフェッショナルで信頼感のあるスタイル">プロフェッショナル</option>
-    <option value="情熱的でワクワクするスタイル">情熱的</option>
-  </select>
+    <button class="generate-btn" id="generateBtn" onclick="generateBlog()">✦ ブログ記事を生成する</button>
+    <div class="status" id="statusText"></div>
 
-  <button class="generate-btn" id="generateBtn" onclick="generateBlog()">✦ ブログ記事を生成する</button>
-
-  <div id="output">
-    <span class="blog-category" id="outputCategory"></span>
-    <h1 id="outputTitle" style="font-size: 1.8rem; margin-bottom: 1.5rem;"></h1>
-    <div id="outputContent"></div>
+    <div id="output">
+      <span class="blog-category" id="outputCategory"></span>
+      <h2 id="outputTitle"></h2>
+      <div id="outputContent"></div>
+    </div>
   </div>
-</div>
 
-<script>
-async function generateBlog() {
-  const topic = document.getElementById('topic').value.trim();
-  const categorySelect = document.getElementById('category');
-  const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
-  const tone = document.getElementById('tone').value;
-  const btn = document.getElementById('generateBtn');
+  <script>
+    async function generateBlog() {
+      const topic = document.getElementById("topic").value.trim();
+      const categoryText = document.getElementById("category").value;
+      const tone = document.getElementById("tone").value;
+      const btn = document.getElementById("generateBtn");
+      const statusText = document.getElementById("statusText");
 
-  if (!topic) {
-    alert("テーマを入力してください。");
-    return;
-  }
+      if (!topic) {
+        alert("テーマを入力してください。");
+        return;
+      }
 
-  btn.innerText = "AIが記事を執筆中...";
-  btn.classList.add('loading');
+      btn.innerText = "AIが記事を執筆中...";
+      btn.classList.add("loading");
+      statusText.innerText = "生成中です。少しお待ちください…";
 
-  try {
-    const res = await fetch('/api/generate-blog', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        topic,
-        categoryText,
-        tone
-      })
-    });
+      try {
+        const res = await fetch("/api/generate-blog", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topic,
+            categoryText,
+            tone
+          })
+        });
 
-   const text = await res.text();
-let data;
-try {
-  data = JSON.parse(text);
-} catch {
-  throw new Error(`APIがJSONを返していません: ${text}`);
-}
+        // まず text で受けて、JSONでない場合も確認できるようにする
+        const raw = await res.text();
 
-    if (!res.ok) {
-      throw new Error(data?.error || 'APIエラー');
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (e) {
+          throw new Error("APIがJSONを返していません: " + raw);
+        }
+
+        if (!res.ok) {
+          throw new Error(data.message || data.error || "APIエラー");
+        }
+
+        document.getElementById("output").style.display = "block";
+        document.getElementById("outputCategory").innerText = categoryText;
+        document.getElementById("outputTitle").innerText = topic;
+        document.getElementById("outputContent").innerHTML =
+          data.html || "<p>記事を取得できませんでした。</p>";
+
+        statusText.innerText = "生成完了しました。";
+        window.scrollTo({
+          top: document.getElementById("output").offsetTop - 10,
+          behavior: "smooth"
+        });
+
+      } catch (e) {
+        console.error(e);
+        statusText.innerText = "";
+        alert("エラー: " + (e.message || "不明なエラー"));
+      } finally {
+        btn.innerText = "✦ ブログ記事を生成する";
+        btn.classList.remove("loading");
+      }
     }
-
-    document.getElementById('output').style.display = 'block';
-    document.getElementById('outputCategory').innerText = categoryText;
-    document.getElementById('outputTitle').innerText = topic;
-    document.getElementById('outputContent').innerHTML = data.html || '<p>記事を取得できませんでした。</p>';
-    window.scrollTo({ top: document.getElementById('output').offsetTop, behavior: 'smooth' });
-
-  catch (e) {
-  console.error(e);
-  alert(`エラー: ${e.message}\n\n${e.stack || ''}`);
-}
-  } finally {
-    btn.innerText = "✦ ブログ記事を生成する";
-    btn.classList.remove('loading');
-  }
-}
-</script>
-
+  </script>
 </body>
 </html>
