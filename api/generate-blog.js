@@ -1,45 +1,102 @@
-const prompt = `
-あなたは日本の美容師歴20年以上の女性スタイリストで、40代女性の悩みに寄り添う人気ブロガーです。
-サロン現場でお客様と会話しているような、あたたかく具体的な文章を書いてください。
+module.exports = async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-カテゴリ: ${categoryText}
-テーマ: ${topic}
-文体: ${tone}
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "POSTのみ対応です。" });
+  }
 
-【この記事の読者】
-- 40代女性
-- 髪の悩み（白髪、うねり、パサつき、ボリューム低下）
-- 更年期前後の心身のゆらぎ
-- 忙しくて自分のケアが後回し
-- でも本当はきれいでいたい
+  try {
+    const { topic, categoryText, tone } = req.body || {};
 
-【書き方のルール】
-- 日本語で書く
-- ありきたりな一般論で終わらせない
-- 美容師としての現場目線を入れる（カウンセリングでよくある声、実例、気づき）
-- 読者が「私のことだ」と感じる表現を入れる
-- 断定しすぎず、やさしく背中を押す
+    if (!topic || !categoryText || !tone) {
+      return res.status(400).json({ message: "入力が不足しています。" });
+    }
+
+    if (String(topic).length > 120) {
+      return res.status(400).json({ message: "テーマは120文字以内で入力してください。" });
+    }
+
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ message: "サーバーのAPIキー設定がありません。" });
+    }
+
+    const prompt = `
+あなたは日本語のプロブロガー兼、実務に強い編集者です。
+以下の条件で、読みやすく具体的で、ありきたりではない記事を書いてください。
+
+【カテゴリ】
+${categoryText}
+
+【テーマ】
+${topic}
+
+【トーン】
+${tone}
+
+【目的】
+- 読者が「なるほど、やってみよう」と思える内容
+- 抽象論ではなく、現場感・生活感のある具体例を入れる
+- ありきたりな言い回し（例: 大切です / 意識しましょう の連発）を避ける
+
+【必須構成】
+1. 導入（共感 + 問題提起）
+2. 本文（3〜5見出し）
+3. まとめ（今日からできる小さな一歩）
+
+【出力ルール】
+- 日本語
+- HTML形式で出力
+- 使用してよいタグは <h2><h3><p><ul><ol><li><strong> のみ
+- タイトル（h1）は不要
+- 絵文字なし
 - 誇大表現・煽り表現は避ける
-- 難しい言葉は使いすぎない
-- 1文は短めに、読みやすく
-- 具体例を最低2つ入れる
-- 今日からできる行動を3つ入れる
-
-【構成】
-1. 導入（共感から始める）
-2. 悩みの原因（美容・生活習慣・年齢変化の視点）
-3. 美容師としての現場で感じること（具体的な会話例や傾向）
-4. 今日からできる対策（3つ）
-5. まとめ（安心感のある締め）
-
-【HTMLルール】
-- 使用してよいタグは <h2> <h3> <p> <ul> <ol> <li> <strong> のみ
-- HTML形式で本文のみを出力（``` や説明文は不要）
-
-【禁止】
-- テンプレっぽい言い回しの連発（例:「〜が重要です」「〜しましょう」だけで終わる）
-- 根拠のない医療断定
-- 不自然に大げさな表現
-
-では、上記ルールに従って、読者に寄り添う実用的な記事を作成してください。
+- 1見出しごとに具体例を1つ以上入れる
+- 40代女性向けテーマなら、日常・体調・気持ちの揺らぎにも自然に触れる
 `;
+
+    const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1500,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const raw = await anthropicRes.text();
+
+    if (!anthropicRes.ok) {
+      return res.status(anthropicRes.status).json({
+        message: `Anthropic APIエラー: ${raw}`
+      });
+    }
+
+    const anthropicData = JSON.parse(raw);
+
+    const text = anthropicData?.content?.[0]?.text;
+    if (!text) {
+      return res.status(500).json({ message: "記事の生成結果が空でした。" });
+    }
+
+    const safeHtml = text
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+      .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, "")
+      .replace(/on\w+="[^"]*"/gi, "");
+
+    return res.status(200).json({ html: safeHtml });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      message: `サーバーエラーが発生しました: ${e.message}`
+    });
+  }
+};
