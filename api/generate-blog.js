@@ -79,6 +79,6 @@ const anthropicData = JSON.parse(raw);
     } catch (e) {
     console.error(e);
     return res.status(500).json({ message: "サーバーエラーが発生しました。" });
-  }
+}
 }
   
