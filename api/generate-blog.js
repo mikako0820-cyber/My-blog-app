@@ -76,6 +76,9 @@ const anthropicData = JSON.parse(raw);
       .replace(/on\w+="[^"]*"/gi, "");
 
     return res.status(200).json({ html: safeHtml });
-  } catch (e) {
+    } catch (e) {
+    console.error(e);
     return res.status(500).json({ message: "サーバーエラーが発生しました。" });
+  }
+}
   
