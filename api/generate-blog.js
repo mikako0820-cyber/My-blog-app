@@ -43,13 +43,21 @@ module.exports = async function handler (req, res) {
         "content-type": "application/json"
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20240620",
+        model: "claude-3-5-sonnet-20241022",
         max_tokens: 1500,
         messages: [{ role: "user", content: prompt }]
       })
     });
 
-    const data = await anthropicRes.json();
+   const raw = await anthropicRes.text();
+
+if (!anthropicRes.ok) {
+  return res.status(anthropicRes.status).json({
+    error: `Anthropic API error: ${raw}`
+  });
+}
+
+const anthropicData = JSON.parse(raw);
 
     if (!anthropicRes.ok) {
       return res.status(anthropicRes.status).json({
