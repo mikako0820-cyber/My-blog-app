@@ -32,7 +32,8 @@ module.exports = async function handler (req, res) {
 - HTMLタグは <h2> <h3> <p> <ul> <ol> <li> <strong> のみ使用
 - 導入→本文→まとめ の流れ
 - 誇大表現は避ける
-`.trim();
+- 実用的でわかりやすい内容
+`;
 
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
