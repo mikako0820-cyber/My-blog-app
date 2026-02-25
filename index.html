@@ -82,7 +82,13 @@ async function generateBlog() {
       })
     });
 
-    const data = await res.json();
+   const text = await res.text();
+let data;
+try {
+  data = JSON.parse(text);
+} catch {
+  throw new Error(`APIがJSONを返していません: ${text}`);
+}
 
     if (!res.ok) {
       throw new Error(data?.error || 'APIエラー');
@@ -94,8 +100,10 @@ async function generateBlog() {
     document.getElementById('outputContent').innerHTML = data.html || '<p>記事を取得できませんでした。</p>';
     window.scrollTo({ top: document.getElementById('output').offsetTop, behavior: 'smooth' });
 
-  } catch (e) {
-    alert("エラー: " + (e.message || "不明なエラー"));
+  catch (e) {
+  console.error(e);
+  alert(`エラー: ${e.message}\n\n${e.stack || ''}`);
+}
   } finally {
     btn.innerText = "✦ ブログ記事を生成する";
     btn.classList.remove('loading');
